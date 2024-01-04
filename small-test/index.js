@@ -15,7 +15,7 @@ const private_key = dev_keys._keypair.secretKey;
 
 const getWalletBalance = async () => {
   const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
-  const my_wallet = Keypair.fromSecretKey(private_key);
+  const my_wallet = await Keypair.fromSecretKey(private_key);
   const balance = await connection.getBalance(
     new PublicKey(my_wallet.publicKey)
   );
@@ -27,4 +27,23 @@ const getWalletBalance = async () => {
   return balance;
 };
 
-getWalletBalance();
+const requestAirdrop = async () => {
+  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+  const my_wallet = await Keypair.fromSecretKey(private_key);
+
+  const result = connection.requestAirdrop(
+    new PublicKey(my_wallet.publicKey),
+    1 * LAMPORTS_PER_SOL
+  );
+
+  const block_hash = await connection.getLatestBlockhash();
+
+  await connection.confirmTransaction({
+    blockhash: block_hash,
+    lastValidBlockHeight: block_hash.lastValidBlockHeight,
+    signature: result,
+  });
+};
+
+requestAirdrop();
+// getWalletBalance();
